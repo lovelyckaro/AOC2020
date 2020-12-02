@@ -23,7 +23,7 @@ validateLine1 (policy, text) = count >= lo policy && count <= hi policy
     where count = T.count (c policy) text
 
 validateLine2 :: (Policy, Text) -> Bool
-validateLine2 (policy, text) = testLo xor testHi
+validateLine2 (policy, text) = testLo `xor` testHi
     where char = head . T.unpack . c $ policy
           testLo = T.index text (lo policy - 1) == char
           testHi = T.index text (hi policy - 1) == char

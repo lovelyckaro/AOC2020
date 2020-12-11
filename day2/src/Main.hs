@@ -46,7 +46,7 @@ main :: IO()
 main = do
     file <- TIO.readFile "input.txt"
     case runParser fullP "input.txt" file of
-        Left error -> print error
+        Left error -> putStr (errorBundlePretty error)
         Right ls -> do
             print "Solution part 1:"
             print (length . filter validateLine1 $ ls)

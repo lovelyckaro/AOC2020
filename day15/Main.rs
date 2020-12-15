@@ -22,11 +22,10 @@ impl State {
     }
     fn run(&mut self) -> usize {
         while self.steps_taken < self.max_steps {
-            match self.looked_at.get(&self.last_seen) {
+            match self.looked_at.get_mut(&self.last_seen) {
                 Some(prev) => {
-                    let tmp = *prev;
-                    self.looked_at.insert(self.last_seen, self.steps_taken);
-                    self.last_seen = self.steps_taken - tmp;
+                    self.last_seen = self.steps_taken - *prev;
+                    *prev = self.steps_taken;
                 }
                 None => {
                     self.looked_at.insert(self.last_seen, self.steps_taken);

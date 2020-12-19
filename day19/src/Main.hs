@@ -34,9 +34,16 @@ data Rule = Constant String | And [Int] | Or [Rule]
 
 type Ruleset = IntMap Rule
 
+-- Parser for all rules
 rulesP :: Parser Ruleset
 rulesP = M.fromList <$> some ruleP
 
+{-
+Parser for a rule
+expect the rule number first
+and then either a list of alternative lists of references to other rules
+or an endpoint rule "a"/"b"
+-}
 ruleP :: Parser (Int, Rule)
 ruleP = do
   n <- L.decimal
@@ -45,6 +52,7 @@ ruleP = do
   void eol <|> eof
   return (n, r)
 
+-- parser for an endpoint rule
 strP :: Parser String
 strP = do
   void (char '\"')
@@ -52,21 +60,25 @@ strP = do
   void (char '\"')
   return [c]
 
+-- parser for a rule which references other rules
 lstP :: Parser Rule
 lstP = And <$> some (L.lexeme hspace L.decimal)
 
+-- parser for all alternatives in a rule
 listsP :: Parser [Rule]
 listsP = some $ do
   ands <- lstP
   void (optional $ L.symbol hspace "|")
   return ands
 
+-- Parser for a message
 messageP :: Parser String
 messageP = do
   str <- some letterChar
   void eol <|> eof
   return str
 
+-- Parser for all the messages
 messagesP :: Parser [String]
 messagesP = some messageP
 
@@ -80,6 +92,18 @@ inputP = do
 toParser1 :: Ruleset -> Parser String
 toParser1 rs = ruleToParser rs (rs ! 0)
 
+{-
+Part 2 is easier than one might expect at first glance.
+All rule 0 does is parse one rule 8 and then one rule 11 (our loops)
+Rule 8 parses x number of rule 42s
+Rule 11 parses y number of rule 42s and then y number of rule 31s
+
+Nowhere else in the rules are rule 0, 8 or 11 featured
+
+This means that we can combine these three rules into one new entrypoint
+where we ask for at least 2 rule 42s and at least 1 31,
+where the number of thirtyones is strictly less than the number of 42s
+-}
 toParser2 :: Ruleset -> Parser String
 toParser2 rs = do
   fortytwos <- many (ruleToParser rs (rs ! 42))

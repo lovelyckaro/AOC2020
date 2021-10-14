@@ -75,11 +75,18 @@ countFreqs tiles = foldr inserter M.empty [(side, tileId tile) | tile <- tiles, 
 uniques :: HashMap Side (Frequency, [TileId]) -> HashMap TileId [Side]
 uniques = M.foldrWithKey (\k (f, i : rest) xs -> M.insertWith (<>) i [k] xs) M.empty . M.filter (\(f, i) -> f == 1)
 
+part1Solution :: HashMap TileId [Side] -> Int
+part1Solution = product . M.keys . M.filter ((==2) . length)
+
+part1 :: String -> Either String Int
+part1 inp = case parse pTiles "input" inp of
+  Right xs -> Right . part1Solution . uniques . countFreqs $ xs
+  Left error -> Left (errorBundlePretty error)
+
 main :: IO ()
 main = do
   inp <- readFile "input"
-  xs <- case parse pTiles "input" inp of
-    Right xs -> return xs
-    Left error -> putStr (errorBundlePretty error) >> return []
-  print . product . M.keys . M.filter ((== 2) . length) . uniques . countFreqs $ xs
+  case part1 inp of
+    Right p -> putStrLn ("Solution part 1: " <> show p)
+    Left error -> putStrLn error
   return ()
